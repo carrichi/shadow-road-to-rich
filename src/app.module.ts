@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PurchaseController } from './purchase/purchase.controller';
-import { PurchaseService } from './purchase/purchase.service';
-import { PurchaseModule } from './purchase/purchase.module';
+import { PurchaseController } from './models/purchase/purchase.controller';
+import { PurchaseService } from './models/purchase/purchase.service';
+import { PurchaseModule } from './models/purchase/purchase.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { IncomesModule } from './incomes/incomes.module';
-import { SettingsModule } from './settings/settings.module';
+import { IncomesModule } from './models/incomes/incomes.module';
+import { SettingsModule } from './models/settings/settings.module';
 
 @Module({
   imports: [
