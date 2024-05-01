@@ -19,7 +19,11 @@ export class Purchase {
   @Column({ nullable: true })
   payment_method: string;
   @Column({ nullable: true })
+  applied_at: Date;
+  @Column({ nullable: true })
   deadline: Date;
+  @Column({ nullable: true })
+  payed_at: Date;
   @Column({ nullable: true })
   category: string;
   @Column({ default: true })
