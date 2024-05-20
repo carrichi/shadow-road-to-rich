@@ -4,14 +4,15 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { PurchaseService } from './purchase.service';
 import { Purchase } from './purchase.entity';
-import { InsertResult } from 'typeorm';
 import { FindPurchasesDTO } from './dto/find.dto';
 import { validateUUID } from 'src/misc/dto/uuid.dto';
 import { CreatePurchaseDTO } from './dto/create.dto';
+import { UpdatePurchaseDTO } from './dto/update.dto';
 
 @Controller('purchases')
 export class PurchaseController {
@@ -31,8 +32,18 @@ export class PurchaseController {
   }
 
   @Post()
-  async create(@Body() data: CreatePurchaseDTO): Promise<InsertResult> {
+  async create(@Body() data: CreatePurchaseDTO): Promise<Purchase> {
     console.log(data);
     return await this.service.create(data);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() data: UpdatePurchaseDTO,
+  ): Promise<Purchase> {
+    return validateUUID(id)
+      ? await this.service.update(id, data)
+      : new BadRequestException('Purchase ID provided is not valid.');
   }
 }

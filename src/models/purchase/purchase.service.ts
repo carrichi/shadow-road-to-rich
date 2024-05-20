@@ -1,14 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Between,
-  DataSource,
-  Equal,
-  ILike,
-  In,
-  InsertResult,
-  Repository,
-} from 'typeorm';
+import { Between, DataSource, Equal, ILike, In, Repository } from 'typeorm';
 import { Purchase } from './purchase.entity';
 import { FindPurchasesDTO } from './dto/find.dto';
 import { CreatePurchaseDTO } from './dto/create.dto';
@@ -37,7 +29,9 @@ export class PurchaseService {
     notes,
   }: FindPurchasesDTO): Promise<Purchase[]> {
     const options = {};
-    if (id) options['id'] = In(id);
+    if (id) {
+      options['id'] = !(id instanceof Array) ? Equal(id) : In(id);
+    }
     if (amount) options['amount'] = Equal(amount);
     if (concept) options['concept'] = ILike(concept);
     if (status) options['status'] = In(status);
@@ -51,9 +45,8 @@ export class PurchaseService {
     if (deadline) options['deadline'] = Between(deadline.start, deadline.end);
     if (payed_at) options['deadline'] = Between(payed_at.start, payed_at.end);
 
-    console.log(options);
-
     const records_found = await this.purchasesRepository.findBy(options);
+    console.log('Records found:');
     console.log(records_found);
     return records_found;
   }
@@ -71,29 +64,56 @@ export class PurchaseService {
     payment_method,
     skippeable,
     status,
-  }: CreatePurchaseDTO): Promise<InsertResult> {
-    const purchase = await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into(Purchase)
-      .values([
-        {
-          concept: concept,
-          amount: amount,
-          category: category,
-          deadline: deadline,
-          notes: notes,
-          payment_method: payment_method,
-          skippeable: skippeable,
-          status: status,
-        },
-      ])
-      .execute();
-    console.log('Created purchase: ', purchase);
-    return purchase;
+  }: CreatePurchaseDTO): Promise<Purchase> {
+    const purchase = this.purchasesRepository.create({
+      concept: concept,
+      amount: amount,
+      category: category,
+      deadline: deadline,
+      notes: notes,
+      payment_method: payment_method,
+      skippeable: skippeable,
+      status: status,
+    });
+    console.log('Data as Purchase:');
+    console.log(purchase);
+    const result = await this.purchasesRepository.save(purchase, {
+      reload: true,
+    });
+    console.log('Result:');
+    console.log(result);
+    // const purchase = await this.dataSource
+    //   .createQueryBuilder()
+    //   .insert()
+    //   .into(Purchase)
+    //   .values([
+    //     {
+    //       concept: concept,
+    //       amount: amount,
+    //       category: category,
+    //       deadline: deadline,
+    //       notes: notes,
+    //       payment_method: payment_method,
+    //       skippeable: skippeable,
+    //       status: status,
+    //     },
+    //   ])
+    //   .execute();
+    return result;
   }
+
   async update(id: string, data: UpdatePurchaseDTO): Promise<any> {
-    await this.purchasesRepository.update(id, data);
+    console.log('id: ', id);
+    const purchase = await this.findOne(id);
+    const result = purchase
+      ? await this.purchasesRepository.save({
+          id: purchase.id,
+          ...data,
+        })
+      : null;
+    console.log('Result:');
+    console.log(result);
+    return result;
   }
 
   async remove(id: string): Promise<void> {

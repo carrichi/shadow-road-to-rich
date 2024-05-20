@@ -1,5 +1,5 @@
 export type FindPurchasesDTO = {
-  id?: string[];
+  id?: string | string[];
   concept?: string;
   status?: string[];
   amount?: number;
