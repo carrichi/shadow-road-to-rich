@@ -107,7 +107,7 @@ export class PurchaseService {
     const purchase = await this.findOne(id);
     const result = purchase
       ? await this.purchasesRepository.save({
-          id: purchase.id,
+          ...purchase,
           ...data,
         })
       : null;
