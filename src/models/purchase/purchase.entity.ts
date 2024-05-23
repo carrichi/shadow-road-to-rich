@@ -31,7 +31,7 @@ export enum PurchaseMethods {
   BBC = 'BBC',
   BBD = 'BBD',
   NUD = 'NUD',
-  CTD = 'CTD',
+  CITID = 'CITID',
   MPD = 'MPD',
   DINN = 'DINN',
   KLAR = 'KLAR',
