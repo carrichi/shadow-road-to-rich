@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity('Incomes')
-export class Purchase {
+export class Income {
   @PrimaryGeneratedColumn('increment')
   id: number;
   @Column({ nullable: true })
