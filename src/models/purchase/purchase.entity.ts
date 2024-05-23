@@ -14,7 +14,7 @@ export class Purchase {
   concept: string;
   @Column({ nullable: true })
   status: string;
-  @Column({ nullable: true })
+  @Column('decimal', { precision: 6, scale: 2 })
   amount: number;
   @Column({ nullable: true })
   payment_method: string;
