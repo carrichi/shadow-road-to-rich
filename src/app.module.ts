@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IncomesModule } from './models/incomes/incomes.module';
 import { SettingsModule } from './models/settings/settings.module';
+import { Purchase } from './models/purchase/purchase.entity';
 
 @Module({
   imports: [
@@ -24,8 +25,8 @@ import { SettingsModule } from './models/settings/settings.module';
         database: configService.get('DATABASE_NAME'),
         username: configService.get('DATABASE_USER'),
         password: '' + configService.get('DATABASE_PASSWORD'),
-        synchronize: true,
-        autoLoadEntities: true,
+        // synchronize: true,
+        entities: [Purchase],
       }),
     }),
     AuthModule,
