@@ -12,7 +12,7 @@ export class Purchase {
   id: number;
   @Column({ nullable: true })
   description: string;
-  @Column({ nullable: true })
+  @Column('float8', { nullable: true })
   amount: number;
   @Column({ nullable: true })
   recieved_at: Date;

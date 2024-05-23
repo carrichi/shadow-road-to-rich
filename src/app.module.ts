@@ -25,7 +25,6 @@ import { Purchase } from './models/purchase/purchase.entity';
         database: configService.get('DATABASE_NAME'),
         username: configService.get('DATABASE_USER'),
         password: '' + configService.get('DATABASE_PASSWORD'),
-        // synchronize: true,
         entities: [Purchase],
       }),
     }),
