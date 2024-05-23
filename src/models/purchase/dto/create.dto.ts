@@ -3,11 +3,11 @@ export type CreatePurchaseDTO = {
   status: string;
   amount: number;
   payment_method: string;
-  category?: string;
+  category: string;
+  applied_at: Date;
+  deadline: Date;
+  payed_at?: Date;
   frecuency?: string;
   skippeable?: boolean;
   notes?: string;
-  applied_at?: Date;
-  deadline?: Date;
-  payed_at?: Date;
 };

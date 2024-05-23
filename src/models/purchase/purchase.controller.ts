@@ -40,7 +40,6 @@ export class PurchaseController {
   async create(
     @Body() data: CreatePurchaseDTO,
   ): Promise<Purchase | BadRequestException> {
-    console.log(data);
     const result = await this.service.create(data);
     return result
       ? result

@@ -56,8 +56,16 @@ export class PurchaseService {
   }
 
   async create(data: CreatePurchaseDTO): Promise<Purchase | undefined> {
+    console.log('Recived data...');
+    console.log(data);
     const purchase = this.purchasesRepository.create({
-      ...data,
+      concept: data.concept,
+      status: data.status,
+      payment_method: data.payment_method,
+      amount: data.amount,
+      category: data.category,
+      applied_at: data.applied_at,
+      deadline: data.deadline,
     });
     console.log('Data as Purchase:');
     console.log(purchase);
