@@ -35,6 +35,7 @@ export enum PurchaseMethods {
   MPD = 'MPD',
   DINN = 'DINN',
   KLAR = 'KLAR',
+  OTHER = 'OTHER',
 }
 
 @Entity('Purchases')
