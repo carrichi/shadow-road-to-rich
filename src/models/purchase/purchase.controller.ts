@@ -37,9 +37,14 @@ export class PurchaseController {
   }
 
   @Post()
-  async create(@Body() data: CreatePurchaseDTO): Promise<Purchase> {
+  async create(
+    @Body() data: CreatePurchaseDTO,
+  ): Promise<Purchase | BadRequestException> {
     console.log(data);
-    return await this.service.create(data);
+    const result = await this.service.create(data);
+    return result
+      ? result
+      : new BadRequestException('Creation of Purchase failed.');
   }
 
   @Patch(':id')

@@ -55,53 +55,23 @@ export class PurchaseService {
     return await this.purchasesRepository.findOneBy({ id });
   }
 
-  async create({
-    concept,
-    amount,
-    category,
-    applied_at,
-    deadline,
-    notes,
-    payment_method,
-    skippeable,
-    status,
-  }: CreatePurchaseDTO): Promise<Purchase> {
+  async create(data: CreatePurchaseDTO): Promise<Purchase | undefined> {
     const purchase = this.purchasesRepository.create({
-      concept: concept,
-      amount: amount,
-      category: category,
-      applied_at: applied_at,
-      deadline: deadline,
-      notes: notes,
-      payment_method: payment_method,
-      skippeable: skippeable,
-      status: status,
+      ...data,
     });
     console.log('Data as Purchase:');
     console.log(purchase);
-    const result = await this.purchasesRepository.save(purchase, {
-      reload: true,
-    });
-    console.log('Result:');
-    console.log(result);
-    // const purchase = await this.dataSource
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(Purchase)
-    //   .values([
-    //     {
-    //       concept: concept,
-    //       amount: amount,
-    //       category: category,
-    //       deadline: deadline,
-    //       notes: notes,
-    //       payment_method: payment_method,
-    //       skippeable: skippeable,
-    //       status: status,
-    //     },
-    //   ])
-    //   .execute();
-    return result;
+    try {
+      const result = await this.purchasesRepository.save(purchase, {
+        reload: true,
+      });
+      console.log('Result:');
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
   }
 
   async update(id: string, data: UpdatePurchaseDTO): Promise<any> {
