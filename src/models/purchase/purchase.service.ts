@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, Equal, ILike, In, Repository } from 'typeorm';
+import { Between, Equal, ILike, In, Repository } from 'typeorm';
 import { Purchase } from './purchase.entity';
 import { FindPurchasesDTO } from './dto/find.dto';
 import { CreatePurchaseDTO } from './dto/create.dto';
@@ -11,39 +11,33 @@ export class PurchaseService {
   constructor(
     @InjectRepository(Purchase)
     private purchasesRepository: Repository<Purchase>,
-    private dataSource: DataSource,
   ) {}
 
-  async findAll({
-    id,
-    amount,
-    concept,
-    status,
-    payment_method,
-    skippeable,
-    category,
-    frecuency,
-    applied_at,
-    deadline,
-    payed_at,
-    notes,
-  }: FindPurchasesDTO): Promise<Purchase[]> {
+  async findAll({ fields, order_by }: FindPurchasesDTO): Promise<Purchase[]> {
     const options = {};
-    if (id) {
-      options['id'] = !(id instanceof Array) ? Equal(id) : In(id);
+    if (fields?.id) {
+      options['id'] = !(fields.id instanceof Array)
+        ? Equal(fields.id)
+        : In(<string[]>fields.id);
     }
-    if (amount) options['amount'] = Equal(amount);
-    if (concept) options['concept'] = ILike(concept);
-    if (status) options['status'] = In(status);
-    if (payment_method) options['payment_method'] = In(payment_method);
-    if (skippeable) options['skippeable'] = skippeable;
-    if (category) options['category'] = In(category);
-    if (frecuency) options['frecuency'] = In(frecuency);
-    if (notes) options['notes'] = ILike(notes);
-    if (applied_at)
-      options['applied_at'] = Between(applied_at.start, applied_at.end);
-    if (deadline) options['deadline'] = Between(deadline.start, deadline.end);
-    if (payed_at) options['deadline'] = Between(payed_at.start, payed_at.end);
+    if (fields?.amount) options['amount'] = Equal(fields.amount);
+    if (fields?.concept) options['concept'] = ILike(fields.concept);
+    if (fields?.status) options['status'] = In(fields.status);
+    if (fields?.payment_method)
+      options['payment_method'] = In(fields.payment_method);
+    if (fields?.skippeable) options['skippeable'] = fields.skippeable;
+    if (fields?.category) options['category'] = In(fields.category);
+    if (fields?.frecuency) options['frecuency'] = In(fields.frecuency);
+    if (fields?.notes) options['notes'] = ILike(fields.notes);
+    if (fields?.applied_at)
+      options['applied_at'] = Between(
+        fields.applied_at.start,
+        fields.applied_at.end,
+      );
+    if (fields?.deadline)
+      options['deadline'] = Between(fields.deadline.start, fields.deadline.end);
+    if (fields?.payed_at)
+      options['deadline'] = Between(fields.payed_at.start, fields.payed_at.end);
 
     const records_found = await this.purchasesRepository.findBy(options);
     console.log('Records found:');

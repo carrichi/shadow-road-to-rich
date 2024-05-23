@@ -7,34 +7,27 @@ import { PurchaseModule } from './models/purchase/purchase.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { IncomesModule } from './models/incomes/incomes.module';
 import { SettingsModule } from './models/settings/settings.module';
-import { Purchase } from './models/purchase/purchase.entity';
+import { DatabaseConfig } from 'database/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksService } from './tasks/tasks.service';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: configService.get('DATABASE_PORT'),
-        database: configService.get('DATABASE_NAME'),
-        username: configService.get('DATABASE_USER'),
-        password: '' + configService.get('DATABASE_PASSWORD'),
-        entities: [Purchase],
-      }),
-    }),
+    TypeOrmModule.forRootAsync(DatabaseConfig), // DATABASE
+    ScheduleModule.forRoot(), // CRON TASKS
+    TasksModule,
     AuthModule,
     PurchaseModule,
     IncomesModule,
     SettingsModule,
   ],
   controllers: [AppController, PurchaseController],
-  providers: [AppService, PurchaseService],
+  providers: [AppService, PurchaseService, TasksService],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {}
