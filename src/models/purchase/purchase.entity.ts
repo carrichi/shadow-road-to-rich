@@ -23,6 +23,20 @@ export enum PurchaseStatus {
   DEBT = 'DEBT',
 }
 
+export enum PurchaseMethods {
+  CASH = 'CASH',
+  NUC = 'NUC',
+  VEXI = 'VEXI',
+  MPC = 'MPC',
+  BBC = 'BBC',
+  BBD = 'BBD',
+  NUD = 'NUD',
+  CTD = 'CTD',
+  MPD = 'MPD',
+  DINN = 'DINN',
+  KLAR = 'KLAR',
+}
+
 @Entity('Purchases')
 export class Purchase {
   @PrimaryGeneratedColumn('uuid')
@@ -34,7 +48,7 @@ export class Purchase {
   status: string;
   @Column({ nullable: false, type: 'float8' })
   amount: number;
-  @Column({ nullable: false })
+  @Column({ nullable: false, type: 'enum', enum: PurchaseMethods })
   payment_method: string;
   @Column({ nullable: false, type: 'date' })
   applied_at: Date;
@@ -44,7 +58,7 @@ export class Purchase {
   payed_at: Date;
   @Column({ nullable: false, type: 'enum', enum: PurchaseCategories })
   category: string;
-  @Column({ default: true, type: 'boolean' })
+  @Column({ default: false, type: 'boolean' })
   skippeable: boolean;
   @Column({ nullable: true, type: 'text' })
   notes: string;
