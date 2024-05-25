@@ -27,6 +27,7 @@ export class PurchaseService {
     private purchasesRepository: Repository<Purchase>,
   ) {}
 
+  // TODO: Add pagination...
   async findAll({
     fields,
     order_by,
@@ -160,7 +161,18 @@ export class PurchaseService {
     return result;
   }
 
-  async remove(id: string): Promise<void> {
+  async softDelete(id: string): Promise<any> {
+    const purchase = await this.findOne(id);
+    const result = purchase
+      ? await this.purchasesRepository.save({
+          ...purchase,
+          deleted_at: new Date(),
+        })
+      : null;
+    return result;
+  }
+
+  async delete(id: string): Promise<void> {
     await this.purchasesRepository.delete(id);
   }
 }

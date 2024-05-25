@@ -63,6 +63,8 @@ export class Purchase {
   skippeable: boolean;
   @Column({ nullable: true, type: 'text' })
   notes: string;
+  @Column({ nullable: true, type: 'date' })
+  deleted_at: Date;
 
   @CreateDateColumn()
   created_at: Date;

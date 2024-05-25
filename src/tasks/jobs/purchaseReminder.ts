@@ -69,21 +69,20 @@ export default async function purchaseReminder(
       deadline: { before: limit_date },
     },
     order_by: [
-      // {
-      //   field: 'concept',
-      //   direction: 'DESC',
-      // },
       {
         field: 'deadline',
         direction: 'ASC',
       },
     ],
   });
-  if (purchases) {
+  console.log('Purchases found...');
+  console.log(purchases);
+  if (purchases.length != 0) {
     // Send summary...
     const total = purchases
       .map((purchase) => purchase.amount)
       .reduce((sum, curr) => sum + curr, 0);
+
     const fechas: string[] = purchases
       .map((purchase) => formatDateISO(new Date(purchase.deadline)))
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
@@ -105,7 +104,7 @@ export default async function purchaseReminder(
       ' \\- ' +
       fechas.at(-1).replaceAll('-', '\\-');
 
-    console.log('Calling sendMessage...');
+    console.log('Sending summary...');
     await sendMessage(
       message.replaceAll(' ', '+'), // Preparing spaces in URL
       { token: config.token, chat_id: config.chat_id },
@@ -136,11 +135,24 @@ export default async function purchaseReminder(
       message += newLine;
     }
 
-    console.log('Calling sendMessage...');
+    console.log('Sending details...');
+    await sendMessage(
+      message.replaceAll('_', '+').replaceAll(' ', '+'), // Preparing spaces in URL
+      { token: config.token, chat_id: config.chat_id },
+      { silent: true },
+    );
+  } else {
+    console.log('No purchases found!');
+    let message =
+      `*YOU ARE FREE \\- ${formatDateISO(new Date())}* ` +
+      emojis.happy +
+      newLine;
+    message += "You don't have pending payments, enjoy your day!" + newLine;
+    console.log('Sending free day...');
     await sendMessage(
       message.replaceAll(' ', '+'), // Preparing spaces in URL
       { token: config.token, chat_id: config.chat_id },
-      { silent: true },
+      { silent: false },
     );
   }
 }
