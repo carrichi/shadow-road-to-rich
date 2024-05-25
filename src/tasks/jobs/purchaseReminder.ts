@@ -1,11 +1,6 @@
 import { PurchaseService } from 'src/models/purchase/purchase.service';
 
 const TELEGRAM_HOST = 'https://api.telegram.org';
-const BOT_TOKEN = '6993305175:AAF3i7uyQkXA9G418mFZ2g_abGXknhdpG4E';
-const CHAT_ID = '1359726201';
-
-const API_URL = `${TELEGRAM_HOST}/bot${BOT_TOKEN}`;
-
 // Custom characters...
 const newLine = '%0A';
 const emojis = {
@@ -24,6 +19,7 @@ const USDDollar = Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
+
 const us_months = {
   0: 'Jan',
   1: 'Feb',
@@ -41,16 +37,48 @@ const us_months = {
 const formatDateISO = (date: Date) =>
   date.getDate() + '/' + us_months[date.getMonth()] + '/' + date.getFullYear();
 
-const sendMessage = async (message: string, silent: boolean) => {
-  console.log('Calling sendMessage...');
-  const res = await fetch(
-    `${API_URL}/sendMessage?chat_id=${CHAT_ID}&parse_mode=MarkdownV2&disable_notification=${silent}&text=${message}`,
-  ).then((res) => res.json());
+const sendMessage = async (message: string, settings, options) => {
+  const BOT_TOKEN = settings.token;
+  const CHAT_ID = settings.chat_id;
+
+  let REQUEST_URL = `${TELEGRAM_HOST}/bot${BOT_TOKEN}/sendMessage
+      ?chat_id=${CHAT_ID}
+      &parse_mode=MarkdownV2
+      &disable_notification=${options.silent ?? false}
+      &text=${message}`;
+  REQUEST_URL = REQUEST_URL.replace(/\r?\n|\r|\s+/g, '');
+
+  console.log(`REQUEST_URL: ${REQUEST_URL}`);
+
+  const res = await fetch(REQUEST_URL).then((res) => res.json());
   if (!res.ok) console.log(res);
 };
 
-export default async function purchaseReminder(service: PurchaseService) {
-  const purchases = await service.findAll({});
+export default async function purchaseReminder(
+  service: PurchaseService,
+  config,
+) {
+  console.log('Searching puchases...');
+  const today = new Date();
+  const limit_date = new Date(today.setDate(today.getDate() + 5));
+
+  const purchases = await service.findAll({
+    method: 'AND',
+    fields: {
+      status: ['OFF_TRACK', 'TO_PAY', 'UP_NEXT'],
+      deadline: { before: limit_date },
+    },
+    order_by: [
+      // {
+      //   field: 'concept',
+      //   direction: 'DESC',
+      // },
+      {
+        field: 'deadline',
+        direction: 'ASC',
+      },
+    ],
+  });
   if (purchases) {
     // Send summary...
     const total = purchases
@@ -59,9 +87,9 @@ export default async function purchaseReminder(service: PurchaseService) {
     const fechas: string[] = purchases
       .map((purchase) => formatDateISO(new Date(purchase.deadline)))
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    console.log(fechas);
+
     let message =
-      `*YOU HAVE PENDING PAYMENTS \\- ${formatDateISO(new Date())}* ` +
+      `*PENDING PAYMENTS \\- ${formatDateISO(new Date())}* ` +
       emojis.happy +
       ' ' +
       newLine;
@@ -77,11 +105,16 @@ export default async function purchaseReminder(service: PurchaseService) {
       ' \\- ' +
       fechas.at(-1).replaceAll('-', '\\-');
 
-    await sendMessage(message, false);
+    console.log('Calling sendMessage...');
+    await sendMessage(
+      message.replaceAll(' ', '+'), // Preparing spaces in URL
+      { token: config.token, chat_id: config.chat_id },
+      { silent: false },
+    );
 
     // Send details...
     message =
-      `*DETAIL OF PENDING PAYMENTS \\- ${formatDateISO(new Date())}* ` +
+      `*DETAIL \\- ${formatDateISO(new Date())}* ` +
       emojis.happy +
       newLine +
       newLine;
@@ -103,6 +136,11 @@ export default async function purchaseReminder(service: PurchaseService) {
       message += newLine;
     }
 
-    await sendMessage(message, true);
+    console.log('Calling sendMessage...');
+    await sendMessage(
+      message.replaceAll(' ', '+'), // Preparing spaces in URL
+      { token: config.token, chat_id: config.chat_id },
+      { silent: true },
+    );
   }
 }

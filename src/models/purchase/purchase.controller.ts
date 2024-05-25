@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Headers,
 } from '@nestjs/common';
 import { PurchaseService } from './purchase.service';
 import { Purchase } from './purchase.entity';
@@ -19,11 +18,7 @@ import { UpdatePurchaseDTO } from './dto/update.dto';
 export class PurchaseController {
   constructor(private readonly service: PurchaseService) {}
   @Get()
-  async findAll(
-    @Body() params: FindPurchasesDTO,
-    @Headers() headers,
-  ): Promise<Purchase[]> {
-    console.log(headers);
+  async findAll(@Body() params: FindPurchasesDTO): Promise<Purchase[]> {
     return await this.service.findAll(params);
   }
 

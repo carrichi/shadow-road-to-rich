@@ -1,10 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Equal, ILike, In, Repository } from 'typeorm';
+import {
+  Between,
+  Equal,
+  FindOperator,
+  ILike,
+  In,
+  LessThan,
+  Repository,
+} from 'typeorm';
 import { Purchase } from './purchase.entity';
 import { FindPurchasesDTO } from './dto/find.dto';
 import { CreatePurchaseDTO } from './dto/create.dto';
 import { UpdatePurchaseDTO } from './dto/update.dto';
+import { SearchDateBy } from 'src/misc/types/date-search.type';
+import transcriptRules from 'src/misc/functions/transcript-rules';
+import transcriptOrders from 'src/misc/functions/transcript-orders';
+import { sortItemsByFields } from 'src/misc/functions/sort-items-by-rules';
+import { OrderByParams } from 'src/misc/types/order-by.type';
+import { castDates } from 'src/misc/functions/cast-types';
 
 @Injectable()
 export class PurchaseService {
@@ -13,35 +27,91 @@ export class PurchaseService {
     private purchasesRepository: Repository<Purchase>,
   ) {}
 
-  async findAll({ fields, order_by }: FindPurchasesDTO): Promise<Purchase[]> {
-    const options = {};
-    if (fields?.id) {
-      options['id'] = !(fields.id instanceof Array)
-        ? Equal(fields.id)
-        : In(<string[]>fields.id);
-    }
-    if (fields?.amount) options['amount'] = Equal(fields.amount);
-    if (fields?.concept) options['concept'] = ILike(fields.concept);
-    if (fields?.status) options['status'] = In(fields.status);
-    if (fields?.payment_method)
-      options['payment_method'] = In(fields.payment_method);
-    if (fields?.skippeable) options['skippeable'] = fields.skippeable;
-    if (fields?.category) options['category'] = In(fields.category);
-    if (fields?.frecuency) options['frecuency'] = In(fields.frecuency);
-    if (fields?.notes) options['notes'] = ILike(fields.notes);
-    if (fields?.applied_at)
-      options['applied_at'] = Between(
-        fields.applied_at.start,
-        fields.applied_at.end,
-      );
-    if (fields?.deadline)
-      options['deadline'] = Between(fields.deadline.start, fields.deadline.end);
-    if (fields?.payed_at)
-      options['deadline'] = Between(fields.payed_at.start, fields.payed_at.end);
+  async findAll({
+    fields,
+    order_by,
+    method,
+  }: FindPurchasesDTO): Promise<Purchase[]> {
+    const options: {
+      rules: object;
+      where: object | [];
+      order: object | null;
+    } = { rules: {}, where: {}, order: null };
 
-    const records_found = await this.purchasesRepository.findBy(options);
-    console.log('Records found:');
-    console.log(records_found);
+    if (fields?.id) {
+      options.rules['id'] = !(fields.id instanceof Array)
+        ? Equal(fields.id)
+        : In(fields.id as string[]);
+    }
+    if (fields?.amount) options.rules['amount'] = Equal(fields.amount);
+    if (fields?.concept) options.rules['concept'] = ILike(fields.concept);
+    if (fields?.status) {
+      options.rules['status'] = !(fields.status instanceof Array)
+        ? Equal(fields.status as string)
+        : In(fields.status as string[]);
+    }
+    if (fields?.payment_method)
+      options.rules['payment_method'] = In(fields.payment_method);
+    if (fields?.skippeable) options.rules['skippeable'] = fields.skippeable;
+    if (fields?.category) options.rules['category'] = In(fields.category);
+    if (fields?.frecuency) options.rules['frecuency'] = In(fields.frecuency);
+    if (fields?.notes) options.rules['notes'] = ILike(fields.notes);
+    if (fields?.applied_at) {
+      options.rules['applied_at'] =
+        fields.applied_at instanceof Date
+          ? Equal(fields.applied_at)
+          : Between(
+              fields.applied_at.between.start,
+              fields.applied_at.between.end,
+            );
+    }
+    if (fields?.deadline) {
+      const filters: FindOperator<any>[] = [];
+      const deadline = fields.deadline;
+      if (deadline instanceof Date) {
+        options.rules['deadline'] = Equal(deadline);
+      } else {
+        if (deadline?.before) filters.push(LessThan(deadline.before));
+        if (deadline?.between)
+          filters.push(Between(deadline.between.start, deadline.between.end));
+        options.rules['deadline'] = SearchDateBy(deadline);
+      }
+    }
+    if (fields?.payed_at) {
+      options.rules['payed_at'] =
+        fields.payed_at instanceof Date
+          ? Equal(fields.payed_at)
+          : Between(fields.payed_at.between.start, fields.payed_at.between.end);
+    }
+
+    options['where'] = transcriptRules(method, options['rules']);
+
+    let records_found = await this.purchasesRepository.findBy(options.where);
+    if (!records_found) return [];
+
+    // Order records, if needed...
+    options['order'] = order_by ? transcriptOrders(order_by) : null;
+    console.log('Orders:');
+    console.log(options['order']);
+
+    let sorted_records = records_found;
+    sorted_records = castDates('deadline', sorted_records);
+
+    // console.log('Records to sort:');
+    // console.log(sorted_records);
+    records_found =
+      options['order'] != null
+        ? sortItemsByFields(options['order'] as OrderByParams, sorted_records)
+        : records_found;
+
+    // console.log('Final result:');
+    // console.log(
+    //   records_found.map((rec) => ({
+    //     status: rec.status,
+    //     amount: rec.amount,
+    //     deadline: rec.deadline,
+    //   })),
+    // );
     return records_found;
   }
 

@@ -14,6 +14,7 @@ import { DatabaseConfig } from 'database/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
 import { TasksModule } from './tasks/tasks.module';
+import { TasksController } from './tasks/tasks.controller';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { TasksModule } from './tasks/tasks.module';
     IncomesModule,
     SettingsModule,
   ],
-  controllers: [AppController, PurchaseController],
+  controllers: [AppController, PurchaseController, TasksController],
   providers: [AppService, PurchaseService, TasksService],
 })
 export class AppModule {
