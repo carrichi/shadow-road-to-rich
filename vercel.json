@@ -22,7 +22,7 @@
     }
   ],
   "crons": [{
-    "path": "/tasks/jobs/purchaseReminder",
+    "path": "/tasks/purchases/daily-reminder",
     "schedule": "0 12 * * *"
   }]
 }
