@@ -20,5 +20,9 @@
       "src": "dist/main.js",
       "use": "@vercel/node"
     }
-  ]
+  ],
+  "crons": [{
+    "path": "tasks/jobs/purchaseReminder",
+    "schedule": "0 12 * * *"
+  }]
 }
