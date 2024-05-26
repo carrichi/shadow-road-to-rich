@@ -1,5 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
+import { PaymentMethod } from 'src/models/payment-method/payment-method.entity';
 import { Purchase } from 'src/models/purchase/purchase.entity';
 
 export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
@@ -12,6 +13,6 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
     database: configService.get('DATABASE_NAME'),
     username: configService.get('DATABASE_USER'),
     password: '' + configService.get('DATABASE_PASSWORD'),
-    entities: [Purchase],
+    entities: [Purchase, PaymentMethod],
   }),
 };

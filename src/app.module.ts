@@ -15,6 +15,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
 import { TasksModule } from './tasks/tasks.module';
 import { TasksController } from './tasks/tasks.controller';
+import { PaymentMethodModule } from './models/payment-method/payment-method.module';
+import { PaymentMethodService } from './models/payment-method/payment-method.service';
+import { PaymentMethodController } from './models/payment-method/payment-method.controller';
 
 @Module({
   imports: [
@@ -26,9 +29,15 @@ import { TasksController } from './tasks/tasks.controller';
     PurchaseModule,
     IncomesModule,
     SettingsModule,
+    PaymentMethodModule,
   ],
-  controllers: [AppController, PurchaseController, TasksController],
-  providers: [AppService, PurchaseService, TasksService],
+  controllers: [
+    AppController,
+    PurchaseController,
+    TasksController,
+    PaymentMethodController,
+  ],
+  providers: [AppService, PurchaseService, TasksService, PaymentMethodService],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {}

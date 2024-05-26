@@ -14,12 +14,14 @@ const emojis = {
   happy: '🌟',
   moneybag: '💰',
   explotion: '💥',
+  sunglasses: '😎',
+  rock: '🤘',
+  yolo_cash: '🤑',
 };
 const USDDollar = Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
-
 const us_months = {
   0: 'Jan',
   1: 'Feb',
@@ -34,6 +36,7 @@ const us_months = {
   10: 'Nov',
   11: 'Dic',
 };
+
 const formatDateISO = (date: Date) =>
   date.getDate() + '/' + us_months[date.getMonth()] + '/' + date.getFullYear();
 
@@ -58,7 +61,6 @@ export default async function purchaseReminder(
   service: PurchaseService,
   config,
 ) {
-  console.log('Searching puchases...');
   const today = new Date();
   const limit_date = new Date(today.setDate(today.getDate() + 5));
 
@@ -75,9 +77,22 @@ export default async function purchaseReminder(
       },
     ],
   });
-  console.log('Purchases found...');
-  console.log(purchases);
-  if (purchases.length != 0) {
+  if (purchases.length == 0) {
+    let message =
+      `*YOUR CASH IS FREE ${emojis.yolo_cash} \\- ${formatDateISO(new Date())}* ` +
+      emojis.sunglasses +
+      newLine;
+    message +=
+      'You have no payments due in the next few days, enjoy your day! ' +
+      emojis.rock +
+      newLine;
+    console.log('Sending free day...');
+    await sendMessage(
+      message.replaceAll('!', '\\!').replaceAll(' ', '+'), // Preparing spaces in URL
+      { token: config.token, chat_id: config.chat_id },
+      { silent: false },
+    );
+  } else {
     // Send summary...
     const total = purchases
       .map((purchase) => purchase.amount)
@@ -140,19 +155,6 @@ export default async function purchaseReminder(
       message.replaceAll('_', '+').replaceAll(' ', '+'), // Preparing spaces in URL
       { token: config.token, chat_id: config.chat_id },
       { silent: true },
-    );
-  } else {
-    console.log('No purchases found!');
-    let message =
-      `*YOU ARE FREE \\- ${formatDateISO(new Date())}* ` +
-      emojis.happy +
-      newLine;
-    message += "You don't have pending payments, enjoy your day!" + newLine;
-    console.log('Sending free day...');
-    await sendMessage(
-      message.replaceAll(' ', '+'), // Preparing spaces in URL
-      { token: config.token, chat_id: config.chat_id },
-      { silent: false },
     );
   }
 }

@@ -87,33 +87,28 @@ export class PurchaseService {
 
     options['where'] = transcriptRules(method, options['rules']);
 
-    let records_found = await this.purchasesRepository.findBy(options.where);
-    if (!records_found) return [];
+    const records_found = await this.purchasesRepository.findBy(options.where);
+    if (records_found.length == 0) return [];
 
     // Order records, if needed...
-    options['order'] = order_by ? transcriptOrders(order_by) : null;
+    if (!order_by) return records_found;
+
+    options['order'] = transcriptOrders(order_by);
     console.log('Orders:');
     console.log(options['order']);
 
     let sorted_records = records_found;
+    // TODO: Add support to Array of fields for castDates()
     sorted_records = castDates('deadline', sorted_records);
+    sorted_records = castDates('applied_at', sorted_records);
+    sorted_records = castDates('payed_at', sorted_records);
+    sorted_records = castDates('deleted_at', sorted_records);
 
-    // console.log('Records to sort:');
-    // console.log(sorted_records);
-    records_found =
-      options['order'] != null
-        ? sortItemsByFields(options['order'] as OrderByParams, sorted_records)
-        : records_found;
-
-    // console.log('Final result:');
-    // console.log(
-    //   records_found.map((rec) => ({
-    //     status: rec.status,
-    //     amount: rec.amount,
-    //     deadline: rec.deadline,
-    //   })),
-    // );
-    return records_found;
+    sorted_records = sortItemsByFields(
+      options['order'] as OrderByParams,
+      sorted_records,
+    );
+    return sorted_records;
   }
 
   async findOne(id: string): Promise<Purchase | null> {

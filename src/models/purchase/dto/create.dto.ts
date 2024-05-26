@@ -1,3 +1,10 @@
+// TODO: Verify fields by enums
+import {
+  PurchaseMethods,
+  PurchaseStatus,
+  PurchaseCategories,
+} from '../purchase.entity';
+
 export type CreatePurchaseDTO = {
   concept: string;
   status: string;
