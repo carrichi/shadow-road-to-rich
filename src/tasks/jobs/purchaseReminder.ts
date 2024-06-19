@@ -48,7 +48,15 @@ const sendMessage = async (message: string, settings, options) => {
       ?chat_id=${CHAT_ID}
       &parse_mode=MarkdownV2
       &disable_notification=${options.silent ?? false}
-      &text=${message}`;
+      &text=${
+        // Casting spaces, trailing commas, etc...
+        message
+          .replaceAll(' ', '+')
+          .replaceAll('_', '+')
+          .replaceAll('!', '\\!')
+          .replaceAll('(', '\\(')
+          .replaceAll(')', '\\)')
+      }`;
   REQUEST_URL = REQUEST_URL.replace(/\r?\n|\r|\s+/g, '');
 
   console.log(`REQUEST_URL: ${REQUEST_URL}`);
@@ -88,7 +96,7 @@ export default async function purchaseReminder(
       newLine;
     console.log('Sending free day...');
     await sendMessage(
-      message.replaceAll('!', '\\!').replaceAll(' ', '+'), // Preparing spaces in URL
+      message,
       { token: config.token, chat_id: config.chat_id },
       { silent: false },
     );
@@ -121,7 +129,7 @@ export default async function purchaseReminder(
 
     console.log('Sending summary...');
     await sendMessage(
-      message.replaceAll(' ', '+'), // Preparing spaces in URL
+      message,
       { token: config.token, chat_id: config.chat_id },
       { silent: false },
     );
@@ -152,7 +160,7 @@ export default async function purchaseReminder(
 
     console.log('Sending details...');
     await sendMessage(
-      message.replaceAll('_', '+').replaceAll(' ', '+'), // Preparing spaces in URL
+      message,
       { token: config.token, chat_id: config.chat_id },
       { silent: true },
     );
